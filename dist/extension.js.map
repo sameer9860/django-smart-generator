@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": ["../src/extension.ts", "../src/commands/createProject.ts"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,IAAAA,UAAwB;;;ACAxB,aAAwB;AAExB,eAAsB,gBAAgB;AAClC,EAAO,cAAO,uBAAuB,iDAAiD;AAC1F;;;ADCO,SAAS,SAAS,SAAkC;AAI1D,UAAQ,IAAI,yEAAyE;AAKrF,QAAM,aAAoB,iBAAS,gBAAgB,6BAA6B,aAAa;AAE7F,UAAQ,cAAc,KAAK,UAAU;AACtC;AAGO,SAAS,aAAa;AAAC;",
+  "names": ["vscode"]
+}
