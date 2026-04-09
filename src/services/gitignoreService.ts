@@ -1,36 +1,13 @@
-import { FileWriter } from '../utils/fileWriter';
-import * as path from 'path';
+import { TemplateService } from './templateService';
 
 export class GitignoreService {
-    private static standardGitignore: string = `
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Virtual environments
-venv/
-env/
-.venv
-
-# Django
-db.sqlite3
-.env
-
-# Media/Static
-/static/
-/media/
-`;
-
     /**
      * Writes a standard Django .gitignore to the workspace.
      */
     static async writeGitignore(cwd: string): Promise<void> {
-        const filePath = path.join(cwd, '.gitignore');
-        await FileWriter.writeFile(filePath, this.standardGitignore.trim());
+        const content = await TemplateService.getTemplateContent('gitignore.txt');
+        if (content) {
+            await TemplateService.writeTemplate(cwd, '.gitignore', content);
+        }
     }
 }
