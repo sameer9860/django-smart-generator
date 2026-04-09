@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import { FileWriter } from '../utils/fileWriter';
 
 export class TemplateService {
@@ -11,10 +12,22 @@ export class TemplateService {
     }
 
     /**
-     * Placeholder for loading templates from the extension's resources.
+     * Loads a template from the extension's resources.
      */
     static async getTemplateContent(templateName: string): Promise<string> {
-        // This will be expanded in Phase 5
-        return '';
+        // In local development, templates are in ../src/templates relative to dist/extension.js
+        // We'll use a path relative to this file's location in src/services
+        const templatePath = path.join(__dirname, '..', 'templates', templateName);
+        
+        try {
+            if (fs.existsSync(templatePath)) {
+                return fs.readFileSync(templatePath, 'utf8');
+            }
+            console.error(`Template not found: ${templatePath}`);
+            return '';
+        } catch (err) {
+            console.error(`Error reading template ${templateName}:`, err);
+            return '';
+        }
     }
 }
