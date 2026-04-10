@@ -11,7 +11,8 @@ export class DjangoService {
     /**
      * Executes the main project generation flow.
      */
-    static async createProject(config: ProjectConfig, cwd: string, progress: vscode.Progress<{ message?: string; increment?: number }>): Promise<void> {
+    static async createProject(config: ProjectConfig, cwd: string, progress: vscode.Progress<{ message?: string; increment?: number }>): Promise<string> {
+        let readmePath = '';
         
         // 1. Create Virtual Environment
         progress.report({ message: `Creating virtual environment (${config.envName})...`, increment: 10 });
@@ -64,9 +65,11 @@ export class DjangoService {
             const finalReadme = readmeContent
                 .replace('{{PROJECT_NAME}}', config.projectName)
                 .replace('{{VENV_ACTIVATE}}', activationCmd);
+            readmePath = path.join(cwd, 'README.md');
             await TemplateService.writeTemplate(cwd, 'README.md', finalReadme);
         }
 
         progress.report({ message: 'Project generated successfully!', increment: 100 });
+        return readmePath;
     }
 }
