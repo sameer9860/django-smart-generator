@@ -15,9 +15,8 @@ export class TemplateService {
      * Loads a template from the extension's resources.
      */
     static async getTemplateContent(templateName: string): Promise<string> {
-        // In local development, templates are in ../src/templates relative to dist/extension.js
-        // We'll use a path relative to this file's location in src/services
-        const templatePath = path.join(__dirname, '..', 'templates', templateName);
+        // Templates are copied to dist/templates/ by esbuild.js alongside dist/extension.js
+        const templatePath = path.join(__dirname, 'templates', templateName);
         
         try {
             if (fs.existsSync(templatePath)) {
