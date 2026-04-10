@@ -260,6 +260,9 @@ async function showProjectWizard() {
   return void 0;
 }
 
+// src/services/djangoService.ts
+var path4 = __toESM(require("path"));
+
 // src/services/envService.ts
 var path = __toESM(require("path"));
 
@@ -393,7 +396,7 @@ var TemplateService = class {
    * Loads a template from the extension's resources.
    */
   static async getTemplateContent(templateName) {
-    const templatePath = path3.join(__dirname, "..", "templates", templateName);
+    const templatePath = path3.join(__dirname, "templates", templateName);
     try {
       if (fs2.existsSync(templatePath)) {
         return fs2.readFileSync(templatePath, "utf8");
@@ -444,6 +447,7 @@ var DjangoService = class {
    * Executes the main project generation flow.
    */
   static async createProject(config, cwd, progress) {
+    let readmePath = "";
     progress.report({ message: `Creating virtual environment (${config.envName})...`, increment: 10 });
     await EnvService.createVenv(cwd, config.envName);
     const pythonPath = EnvService.getVenvPythonPath(config.envName);
@@ -476,37 +480,56 @@ var DjangoService = class {
     if (readmeContent) {
       const activationCmd = EnvService.getActivationCommand(config.envName);
       const finalReadme = readmeContent.replace("{{PROJECT_NAME}}", config.projectName).replace("{{VENV_ACTIVATE}}", activationCmd);
+      readmePath = path4.join(cwd, "README.md");
       await TemplateService.writeTemplate(cwd, "README.md", finalReadme);
     }
     progress.report({ message: "Project generated successfully!", increment: 100 });
+    return readmePath;
   }
 };
 
 // src/commands/createProject.ts
 async function createProject() {
   const config = await showProjectWizard();
-  if (config) {
-    const workspaceFolders = vscode2.workspace.workspaceFolders;
-    if (!workspaceFolders) {
-      vscode2.window.showErrorMessage("Please open a folder to generate the Django project.");
-      return;
-    }
-    const cwd = workspaceFolders[0].uri.fsPath;
-    try {
-      await vscode2.window.withProgress({
-        location: vscode2.ProgressLocation.Notification,
-        title: "Generating Django Project",
-        cancellable: false
-      }, async (progress) => {
-        await DjangoService.createProject(config, cwd, progress);
-      });
-      vscode2.window.showInformationMessage(`Successfully created Django project: ${config.projectName}`);
-    } catch (error) {
-      TerminalUtil.showOutput();
-      vscode2.window.showErrorMessage(`Failed to create Django project. Check the output for details. Error: ${error?.message || error}`);
-    }
-  } else {
+  if (!config) {
     vscode2.window.showWarningMessage("Django project creation cancelled.");
+    return;
+  }
+  const workspaceFolders = vscode2.workspace.workspaceFolders;
+  if (!workspaceFolders) {
+    vscode2.window.showErrorMessage("Please open a folder to generate the Django project.");
+    return;
+  }
+  const cwd = workspaceFolders[0].uri.fsPath;
+  try {
+    let readmePath = "";
+    await vscode2.window.withProgress({
+      location: vscode2.ProgressLocation.Notification,
+      title: `Django Smart Generator`,
+      cancellable: false
+    }, async (progress) => {
+      readmePath = await DjangoService.createProject(config, cwd, progress);
+    });
+    if (readmePath) {
+      const doc = await vscode2.workspace.openTextDocument(vscode2.Uri.file(readmePath));
+      await vscode2.window.showTextDocument(doc, { preview: false });
+    }
+    const action = await vscode2.window.showInformationMessage(
+      `\u2705 Django project "${config.projectName}" is ready!`,
+      "Open Folder"
+    );
+    if (action === "Open Folder") {
+      await vscode2.commands.executeCommand(
+        "vscode.openFolder",
+        vscode2.Uri.file(cwd),
+        false
+      );
+    }
+  } catch (error) {
+    TerminalUtil.showOutput();
+    vscode2.window.showErrorMessage(
+      `\u274C Failed to create project "${config.projectName}". Check the Output panel for details.`
+    );
   }
 }
 
